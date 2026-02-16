@@ -1,0 +1,28 @@
+# Xcode
+.DS_Store
+xcuserdata/
+*.xcuserstate
+*.xccheckout
+*.xcscmblueprint
+
+# Build
+DerivedData/
+build/
+
+# Swift Package Manager
+.build/
+Packages/
+Package.resolved
+
+# CocoaPods
+Pods/
+Carthage/Build/
+
+# Code coverage
+*.profdata
+
+# Logs
+*.log
+
+# Secrets
+*.env
