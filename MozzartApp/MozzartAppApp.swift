@@ -11,7 +11,7 @@ import SwiftUI
 struct MozzartAppApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            HomeView()
         }
     }
 }
