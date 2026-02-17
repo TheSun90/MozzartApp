@@ -80,9 +80,7 @@ final class HomeViewModel: ObservableObject {
                 guard let date = DateHelper.fromStringToDate(from: match.date) else {
                     return true
                 }
-                
-                // TODO: create calendar methods
-                return true
+                return selectedDayFilter.matches(date)
             }
     }
     

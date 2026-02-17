@@ -78,3 +78,26 @@ struct Match: Codable, Identifiable {
 
     
 }
+
+extension Match {
+
+    var currentTimeMinute: Int? {
+        guard let raw = currentTimeRaw?
+            .trimmingCharacters(in: .whitespacesAndNewlines),
+              !raw.isEmpty
+        else { return nil }
+
+        let digits = raw.filter { $0.isNumber }
+        guard !digits.isEmpty else { return nil }
+        return Int(digits)
+    }
+
+    var currentTimeDisplay: String? {
+        guard let raw = currentTimeRaw?
+            .trimmingCharacters(in: .whitespacesAndNewlines),
+              !raw.isEmpty
+        else { return nil }
+
+        return raw.replacingOccurrences(of: "'", with: "’")
+    }
+}
