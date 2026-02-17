@@ -11,7 +11,7 @@ import SwiftUI
 
     var body: some View {
         ZStack {
-            Color.black.opacity(0.85).ignoresSafeArea()
+            Color.backgroundPrimaryColor.ignoresSafeArea()
         }
     }
 }

@@ -62,7 +62,8 @@ struct HomeView: View {
                                     awayAvatar: URL(string: match.awayTeamAvatar),
                                     subtitle: homeViewModel.prematchSubtitle,
                                     timeText: homeViewModel.prematchTimeText(for: match),
-                                    leagueText: homeViewModel.leagueText(for: match)
+                                    leagueText: homeViewModel.leagueText(for: match),
+                                    leagueIconURL: homeViewModel.competitionIconURL(for: match.competitionId)
                                 )
                             }
                         }

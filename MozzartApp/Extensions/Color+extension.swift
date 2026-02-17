@@ -12,6 +12,7 @@ import SwiftUI
     static let selectedYellow = Color(hex: 0xF2C400)
      static let backgroundCard = Color.black.opacity(0.45)
     static let teal = Color(hex: 0x30D5C8)
+     static let backgroundPrimaryColor = Color(hex: 0x0F131A)
 
     init(hex: UInt32, alpha: Double = 1.0) {
         let r = Double((hex >> 16) & 0xFF) / 255.0
