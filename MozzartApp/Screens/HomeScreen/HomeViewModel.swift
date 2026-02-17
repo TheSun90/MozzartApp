@@ -43,6 +43,11 @@ final class HomeViewModel: ObservableObject {
     var liveMatches: [Match] {
         matches.filter { $0.status == .live }
     }
+    
+    func competitionIconURL(for competitionId: Int) -> URL? {
+        guard let urlString = competitionsById[competitionId]?.competitionIconUrl else { return nil }
+        return URL(string: urlString)
+    }
 
     var prematchMatches: [Match] {
         matches.filter { $0.status == .preMatch }

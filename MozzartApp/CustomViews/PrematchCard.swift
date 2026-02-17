@@ -24,7 +24,7 @@ import SwiftUI
                     Text(homeName)
                         .font(.system(size: 13, weight: .semibold))
                         .foregroundStyle(Color.white.opacity(0.90))
-                    PlaceholderImageCircle(url: homeAvatar, fallbackText: initials(from: homeName))
+                    avatarView(name: homeName, url: homeAvatar)
                         .frame(width: 34, height: 34)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -48,7 +48,7 @@ import SwiftUI
                     Text(awayName)
                         .font(.system(size: 13, weight: .semibold))
                         .foregroundStyle(Color.white.opacity(0.90))
-                    PlaceholderImageCircle(url: awayAvatar, fallbackText: initials(from: awayName))
+                    avatarView(name: awayName, url: awayAvatar)
                         .frame(width: 34, height: 34)
                 }
                 .frame(maxWidth: .infinity, alignment: .trailing)
@@ -65,9 +65,18 @@ import SwiftUI
         )
     }
 
-    private func initials(from name: String) -> String {
-        let comps = name.split(separator: " ").prefix(2)
-        let chars = comps.compactMap { $0.first }
-        return String(chars)
+    @ViewBuilder
+    private func avatarView(name: String, url: URL?) -> some View {
+        ZStack {
+            InitialsCircle(name: name, size: 34)
+
+            if let rasterURL = ImageURLHelper.rasterURLIfDicebearSVG(url) {
+                CachedURLImage(url: rasterURL) {
+                    Color.clear
+                }
+                .frame(width: 34, height: 34)
+                .clipShape(Circle())
+            }
+        }
     }
 }

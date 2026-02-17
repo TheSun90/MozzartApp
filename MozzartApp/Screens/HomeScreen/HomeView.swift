@@ -32,7 +32,8 @@ struct HomeView: View {
                         } else {
                             ForEach(homeViewModel.filteredLiveMatches) { match in
                                 LiveMatchCard(
-                                    leagueText: homeViewModel.leagueText(for: match),
+                                    leagueText: homeViewModel.competitionName(for: match.competitionId),
+                                    leagueIconURL: homeViewModel.competitionIconURL(for: match.competitionId),
                                     timeText: homeViewModel.liveTimeText(for: match),
                                     homeName: match.homeTeam,
                                     awayName: match.awayTeam,

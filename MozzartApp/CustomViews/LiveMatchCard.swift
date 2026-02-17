@@ -7,9 +7,10 @@
 
 import SwiftUI
 
- struct LiveMatchCard: View {
+struct LiveMatchCard: View {
 
     let leagueText: String
+    let leagueIconURL: URL?
     let timeText: String
     let homeName: String
     let awayName: String
@@ -22,11 +23,7 @@ import SwiftUI
         VStack(alignment: .leading, spacing: 10) {
             HStack(spacing: 8) {
                 
-                //TODO: import svg library
-                /// Placeholder
-                Circle()
-                    .fill(Color.white.opacity(0.14))
-                    .frame(width: 18, height: 18)
+                leagueIconView(url: leagueIconURL)
 
                 Text(leagueText)
                     .font(.system(size: 12, weight: .medium))
@@ -76,9 +73,34 @@ import SwiftUI
                 .stroke(Color.white.opacity(0.06), lineWidth: 1)
         )
     }
+    
+    @ViewBuilder
+    private func leagueIconView(url: URL?) -> some View {
+        if let rasterURL = ImageURLHelper.rasterURLIfDicebearSVG(url) {
+            CachedURLImage(url: rasterURL) {
+                // fallback
+                Image(systemName: "flag.fill")
+                    .font(.system(size: 10, weight: .semibold))
+                    .foregroundStyle(.white.opacity(0.6))
+                    .frame(width: 18, height: 18)
+                    .background(Color.white.opacity(0.08))
+                    .clipShape(RoundedRectangle(cornerRadius: 4, style: .continuous))
+            }
+            .frame(width: 18, height: 18)
+            .clipShape(RoundedRectangle(cornerRadius: 4, style: .continuous))
+        } else {
+            Image(systemName: "flag.fill")
+                .font(.system(size: 10, weight: .semibold))
+                .foregroundStyle(.white.opacity(0.6))
+                .frame(width: 18, height: 18)
+                .background(Color.white.opacity(0.08))
+                .clipShape(RoundedRectangle(cornerRadius: 4, style: .continuous))
+        }
+    }
 
-     func scoreText(_ value: Int?) -> String {
+    private func scoreText(_ value: Int?) -> String {
         guard let value else { return "—" }
         return String(value)
     }
 }
+
