@@ -50,22 +50,32 @@ final class HomeAPI: HomeAPIType {
     // MARK: - Refresh from network
 
     func refreshMatches() async throws -> [Match] {
-        let value: [Match] = try await api.fetch(.matches)
-        cache.save(value, forKey: Key.matches)
-        return value
+        do {
+            let value: [Match] = try await api.fetch(.matches)
+            cache.save(value, forKey: Key.matches)
+            return value
+        } catch {
+            return loadCachedMatches()
+        }
     }
 
     func refreshCompetitions() async throws -> [Competition] {
-        let value: [Competition] = try await api.fetch(.competitions)
-        cache.save(value, forKey: Key.competitions)
-        return value
+        do {
+            let value: [Competition] = try await api.fetch(.competitions)
+            cache.save(value, forKey: Key.competitions)
+            return value
+        } catch {
+            return loadCachedCompetitions()
+        }
     }
 
     func refreshSports() async throws -> [Sport] {
-        let value: [Sport] = try await api.fetch(.sports)
-        cache.save(value, forKey: Key.sports)
-        return value
+        do {
+            let value: [Sport] = try await api.fetch(.sports)
+            cache.save(value, forKey: Key.sports)
+            return value
+        } catch {
+            return loadCachedSports()
+        }
     }
-    
 }
-                        

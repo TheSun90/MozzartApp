@@ -1,4 +1,3 @@
-//
 //  HomeViewModel.swift
 //  MozzartApp
 //
@@ -16,9 +15,9 @@ final class HomeViewModel: ObservableObject {
     @Published var competitions: [Competition] = []
     @Published var sports: [Sport] = []
     
-    @Published var matchesState: LoadState = .notStarted
-    @Published var competitionsState: LoadState = .notStarted
-    @Published var sportsState: LoadState = .notStarted
+    @Published var matchesState: LoadState = .loaded
+    @Published var competitionsState: LoadState = .loaded
+    @Published var sportsState: LoadState = .loaded
     
     /// properties used for segmented controll
     @Published var selectedSportId: Int? = SportID.football.rawValue
@@ -85,14 +84,19 @@ final class HomeViewModel: ObservableObject {
     }
     
     
-    func load() {
-        Task { await refreshMatches() }
-        Task { await refreshCompetitions() }
-        Task { await refreshSports() }
+    // MARK: - Data Loading
+    
+    func load() async {
+        await withTaskGroup(of: Void.self) { group in
+            group.addTask { await self.refreshMatches() }
+            group.addTask { await self.refreshCompetitions() }
+            group.addTask { await self.refreshSports() }
+        }
     }
 
     private func refreshMatches() async {
-        matchesState = .loading
+        if matches.isEmpty { matchesState = .loading }
+
         do {
             let value = try await homeRepository.refreshMatches()
             matches = value
@@ -103,7 +107,10 @@ final class HomeViewModel: ObservableObject {
     }
 
     private func refreshCompetitions() async {
-        competitionsState = .loading
+        if competitions.isEmpty {
+            competitionsState = .loading
+        }
+
         do {
             let value = try await homeRepository.refreshCompetitions()
             competitions = value
@@ -114,7 +121,10 @@ final class HomeViewModel: ObservableObject {
     }
 
     private func refreshSports() async {
-        sportsState = .loading
+        if sports.isEmpty {
+            sportsState = .loading
+        }
+
         do {
             let value = try await homeRepository.refreshSports()
             sports = value
@@ -123,5 +133,49 @@ final class HomeViewModel: ObservableObject {
             sportsState = .failed(error.localizedDescription)
         }
     }
+}
+
+// MARK: extension of HomeViewModel
+/// helpers for LiveMatchCard and PrematchCard
+
+extension HomeViewModel {
     
+    var filteredLiveMatches: [Match] {
+        liveMatches.filter { match in
+            guard let selected = selectedSportId else { return true }
+            return match.sportId == selected
+        }
+    }
+    
+    func leagueText(for match: Match) -> String {
+        competitionName(for: match.competitionId)
+    }
+    
+    func liveTimeText(for match: Match) -> String {
+        let isFootball = match.sportId == SportID.football.rawValue
+
+        if isFootball, let minute = match.currentTimeMinute {
+            if minute <= 45 { return "1. poluvreme – \(minute)’" }
+            if minute <= 90 { return "2. poluvreme – \(minute)’" }
+            return "Produžeci – \(minute)’"
+        }
+
+        return match.currentTimeDisplay ?? "Uživo"
+    }
+    
+    func prematchTimeText(for match: Match) -> String {
+        if let date = DateHelper.fromStringToDate(from: match.date) {
+            return DateHelper.timeOnly(from: date)
+        }
+
+        if match.date.count >= 5 {
+            return String(match.date.suffix(5))
+        }
+
+        return match.date
+    }
+    
+    var prematchSubtitle: String {
+        selectedDayFilter.title
+    }
 }
