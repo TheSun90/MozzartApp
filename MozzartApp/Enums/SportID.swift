@@ -7,7 +7,7 @@
 
 
 
-enum SportID: Int {
+enum SportID: Int, CaseIterable {
     case football = 1
     case basketball = 2
     case tennis = 5

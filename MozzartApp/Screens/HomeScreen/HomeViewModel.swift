@@ -15,6 +15,8 @@ final class HomeViewModel: ObservableObject {
     @Published var competitions: [Competition] = []
     @Published var sports: [Sport] = []
     
+    @Published private(set) var competitionsById: [Int: Competition] = [:]
+    
     @Published var matchesState: LoadState = .loaded
     @Published var competitionsState: LoadState = .loaded
     @Published var sportsState: LoadState = .loaded
@@ -25,13 +27,19 @@ final class HomeViewModel: ObservableObject {
     
     
     private let homeRepository: HomeAPIType
+    private var loadTask: Task<Void, Never>?
 
     init(homeRepository: HomeAPIType) {
         self.homeRepository = homeRepository
         /// cache load
         self.matches = homeRepository.loadCachedMatches()
         self.competitions = homeRepository.loadCachedCompetitions()
+        self.competitionsById = Dictionary(uniqueKeysWithValues: competitions.map { ($0.id, $0) })
         self.sports = homeRepository.loadCachedSports()
+    }
+    
+    deinit {
+        loadTask?.cancel()
     }
 
     /// create viewModel with the default repository.
@@ -52,22 +60,9 @@ final class HomeViewModel: ObservableObject {
     var prematchMatches: [Match] {
         matches.filter { $0.status == .preMatch }
     }
-    
-    var competitionsById: [Int: Competition] {
-        Dictionary(uniqueKeysWithValues: competitions.map { ($0.id, $0) })
-    }
 
-    func competitionName(for competitionId: Int) -> String {
-        competitionsById[competitionId]?.name ?? "Competition: \(competitionId)"
-    }
-    
-    
-    var sportsById: [Int: Sport] {
-        Dictionary(uniqueKeysWithValues: sports.map { ($0.id, $0) })
-    }
-
-    func sportName(for sportId: Int) -> String {
-        sportsById[sportId]?.name ?? "Sport: \(sportId)"
+    func competitionName(for competitionId: Int) -> String? {
+        competitionsById[competitionId]?.name
     }
     
     var filteredPrematchMatches: [Match] {
@@ -90,50 +85,71 @@ final class HomeViewModel: ObservableObject {
     
     
     // MARK: - Data Loading
-    
-    func load() async {
-        await withTaskGroup(of: Void.self) { group in
-            group.addTask { await self.refreshMatches() }
-            group.addTask { await self.refreshCompetitions() }
-            group.addTask { await self.refreshSports() }
+
+    /// If called again while a previous load is running, the previous one is cancelled.
+    func load() {
+        loadTask?.cancel()
+        loadTask = Task { [weak self] in
+            await self?.loadInternal()
         }
     }
 
+    private func loadInternal() async {
+        async let matchesTask: Void = refreshMatches()
+        async let competitionsTask: Void = refreshCompetitions()
+        async let sportsTask: Void = refreshSports()
+
+        _ = await (matchesTask, competitionsTask, sportsTask)
+    }
+
     private func refreshMatches() async {
+        guard !Task.isCancelled else { return }
         if matches.isEmpty { matchesState = .loading }
 
         do {
             let value = try await homeRepository.refreshMatches()
+            guard !Task.isCancelled else { return }
             matches = value
             matchesState = .loaded
+        } catch is CancellationError {
+            // Ignore cancellation
         } catch {
             matchesState = .failed(error.localizedDescription)
         }
     }
 
     private func refreshCompetitions() async {
+        guard !Task.isCancelled else { return }
         if competitions.isEmpty {
             competitionsState = .loading
         }
 
         do {
             let value = try await homeRepository.refreshCompetitions()
+            guard !Task.isCancelled else { return }
             competitions = value
+            competitionsById = Dictionary(uniqueKeysWithValues: value.map { ($0.id, $0) })
             competitionsState = .loaded
+        } catch is CancellationError {
+            // Ignore cancellation
         } catch {
             competitionsState = .failed(error.localizedDescription)
         }
     }
 
     private func refreshSports() async {
+        guard !Task.isCancelled else { return }
         if sports.isEmpty {
             sportsState = .loading
         }
 
         do {
             let value = try await homeRepository.refreshSports()
+            guard !Task.isCancelled else { return }
             sports = value
             sportsState = .loaded
+        } catch is CancellationError {
+            // Ignore cancellation
         } catch {
             sportsState = .failed(error.localizedDescription)
         }
@@ -153,7 +169,7 @@ extension HomeViewModel {
     }
     
     func leagueText(for match: Match) -> String {
-        competitionName(for: match.competitionId)
+        competitionName(for: match.competitionId) ?? "Nepoznata liga"
     }
     
     func liveTimeText(for match: Match) -> String {

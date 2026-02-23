@@ -32,7 +32,7 @@ struct HomeView: View {
                         } else {
                             ForEach(homeViewModel.filteredLiveMatches) { match in
                                 LiveMatchCard(
-                                    leagueText: homeViewModel.competitionName(for: match.competitionId),
+                                    leagueText: homeViewModel.leagueText(for: match),
                                     leagueIconURL: homeViewModel.competitionIconURL(for: match.competitionId),
                                     timeText: homeViewModel.liveTimeText(for: match),
                                     homeName: match.homeTeam,
@@ -75,11 +75,11 @@ struct HomeView: View {
                 .padding(.bottom, 24)
             }
             .refreshable {
-                await homeViewModel.load()
+                 homeViewModel.load()
             }
         }
         .task {
-            await homeViewModel.load()
+             homeViewModel.load()
         }
     }
 }

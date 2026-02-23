@@ -7,7 +7,7 @@
 
 import SwiftUI
 
- struct SportSegmentedControll: View {
+struct SportSegmentedControll: View {
     let title: String
     let iconSystemName: String
     let isSelected: Bool
@@ -45,21 +45,33 @@ import SwiftUI
 
 // MARK: - Sport pills
 
- struct SportSegmentedRow: View {
+struct SportSegmentedRow: View {
     let sports: [Sport]
     @Binding var selectedSportId: Int?
 
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 10) {
-                ForEach(sports) { sport in
-                    if let sportID = SportID(rawValue: sport.id) {
+                if sports.isEmpty {
+                    ForEach(SportID.allCases, id: \.rawValue) { sportID in
                         SportSegmentedControll(
                             title: sportID.displayName,
                             iconSystemName: sportID.iconSystemName,
-                            isSelected: selectedSportId == sport.id
+                            isSelected: selectedSportId == sportID.rawValue
                         ) {
-                            selectedSportId = sport.id
+                            selectedSportId = sportID.rawValue
+                        }
+                    }
+                } else {
+                    ForEach(sports) { sport in
+                        if let sportID = SportID(rawValue: sport.id) {
+                            SportSegmentedControll(
+                                title: sportID.displayName,
+                                iconSystemName: sportID.iconSystemName,
+                                isSelected: selectedSportId == sport.id
+                            ) {
+                                selectedSportId = sport.id
+                            }
                         }
                     }
                 }
